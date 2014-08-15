@@ -20,14 +20,16 @@ stop on runlevel [06]
 
 # Set this to the number of resque processes you want
 # to run on this machine
-env resque_CONF=<%= @resque_conf %>
+env RESQUE_CONF=<%= @resque_conf %>
 
 pre-start script
-  for i in `cat $resque_CONF`; do
+  for i in `cat $RESQUE_CONF`; do
     app=`echo $i | cut -d , -f 1`
     num_workers=`echo $i | cut -d , -f 2`
+    queues=`echo $i | cut -d , -f 3`
+    [ ! -z $queues ] || queues='*' # Default to wildcard queue if undefined
     for j in `seq 0 $(($num_workers - 1))`; do
-      start resque app=$app index=$j
+      start resque app=$app index=$j queues=$queues
     done
   done
 end script

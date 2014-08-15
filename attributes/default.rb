@@ -1,6 +1,6 @@
-default[:resque][:exec_prefix] = "exec"
+default[:resque][:exec_prefix] = "bundle exec"
 default[:resque][:environment] = "production"
 default[:resque][:config_file] = "config/resque.yml"
 default[:resque][:pids_dir] = "tmp/pids"
-default[:resque][:resque_conf] = "/etc/resque.conf"
+default[:resque][:logfile] = "log/resque_workers.log"
 default[:resque][:user] = "root"
