@@ -26,17 +26,22 @@ respawn limit 3 30
 # TERM and USR1 are sent by resquectl when stopping resque.  Without declaring these as normal exit codes, it just respawns.
 normal exit 0 TERM QUIT
 
-instance scheduler-${app}-${index}
+instance scheduler-${app}
 
+pre-start script
+   RAILS_ENV=<%= @environment %>
+   BACKGROUND=yes
+   PIDFILE=<%=@pids_dir%>/scheduler.pid
+end script
 
-exec sudo -u <%= @user %> /bin/bash -c "cd $app && <%= @exec_prefix %> rake resque:scheduler RAILS_ENV=<%= @environment %> >> <%= @logfile %> 2>&1 && echo $! > <%= @pids_dir %>/scheduler-${index}.pid"
+exec sudo -u <%= @user %> /bin/bash -c "cd $app && <%= @exec_prefix %> rake resque:scheduler"
 
 pre-stop script
 # this script runs in /bin/sh by default
 # respawn as bash so we can source in rbenv
 exec /bin/bash <<EOT
   logger -t resque-scheduler "Stopping process: $app"
-  kill -s QUIT <%= @pids_dir %>/scheduler-${index}.pid
+  kill -s QUIT <%= @pids_dir %>/scheduler.pid
 EOT
 end script
 
