@@ -8,33 +8,39 @@
 #
 # Save this config as /etc/init/resque.conf then mange resque with:
 #   sudo start resque app=/path/to/app index=0
-#   sudo stop resque app=/path/to/app  index=0
+#   sudo stop resque app=/path/to/app index=0
 #   sudo status resque app=/path/to/app index=0
 #
 # or use the service command:
 #   sudo service resque {start,stop,restart,status}
 #
 
-description "Resque Background Worker"
+description "Resque Scheduler Worker"
 
 # no "start on", we don't want to automatically start
-stop on (stopping resque-manager or runlevel [06])
+stop on (stopping resque-scheduler-manager or runlevel [06])
 
 respawn
 respawn limit 3 30
 
 # TERM and USR1 are sent by resquectl when stopping resque.  Without declaring these as normal exit codes, it just respawns.
-normal exit 0 TERM USR1 QUIT
+normal exit 0 TERM QUIT
 
-instance ${app}-${index}
+instance scheduler-${app}
 
+pre-start script
+   RAILS_ENV=<%= @environment %>
+   BACKGROUND=yes
+   PIDFILE=<%=@pids_dir%>/scheduler.pid
+end script
 
-exec sudo -u <%= @user %> /bin/bash -c "cd $app && <%= @exec_prefix %> rake resque:work QUEUE=* PIDFILE=<%= @pids_dir %>/${index}.pid RAILS_ENV=<%= @environment %> >> <%= @logfile %> 2>&1"
+exec sudo -u <%= @user %> /bin/bash -c "cd $app && <%= @exec_prefix %> rake resque:scheduler"
 
 pre-stop script
 # this script runs in /bin/sh by default
 # respawn as bash so we can source in rbenv
 exec /bin/bash <<EOT
-  logger -t resque "Stopping process: $app-$index"
+  logger -t resque-scheduler "Stopping process: $app"
 EOT
 end script
+
