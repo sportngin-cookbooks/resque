@@ -41,7 +41,6 @@ pre-stop script
 # respawn as bash so we can source in rbenv
 exec /bin/bash <<EOT
   logger -t resque-scheduler "Stopping process: $app"
-  kill -s QUIT <%= @pids_dir %>/scheduler.pid
 EOT
 end script
 

@@ -36,6 +36,5 @@ pre-stop script
 # respawn as bash so we can source in rbenv
 exec /bin/bash <<EOT
   logger -t resque "Stopping process: $app-$index"
-  kill -s QUIT <%= @pids_dir %>/${index}.pid
 EOT
 end script
