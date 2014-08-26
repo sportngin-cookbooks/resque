@@ -28,13 +28,9 @@ normal exit 0 TERM QUIT
 
 instance scheduler-${app}
 
-pre-start script
-   RAILS_ENV=<%= @environment %>
-   BACKGROUND=yes
-   PIDFILE=<%=@pids_dir%>/scheduler.pid
-end script
+exec sudo -u <%= @user %> /bin/bash -c "cd $app && <%= @exec_prefix %> rake resque:scheduler PIDFILE=$app/<%=@pids_dir%>/scheduler.pid RAILS_ENV=<%= @environment %>"
 
-exec sudo -u <%= @user %> /bin/bash -c "cd $app && <%= @exec_prefix %> rake resque:scheduler"
+
 
 pre-stop script
 # this script runs in /bin/sh by default
