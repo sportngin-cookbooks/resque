@@ -29,7 +29,7 @@ normal exit 0 TERM USR1 QUIT
 instance ${app}-${index}
 
 
-exec sudo -u <%= @user %> /bin/bash -c "cd $app && <%= @exec_prefix %> rake resque:work QUEUE=* PIDFILE=<%= @pids_dir %>/${index}.pid RAILS_ENV=<%= @environment %> >> <%= @logfile %> 2>&1"
+exec sudo -u <%= @user %> /bin/bash -c "cd $app && <%= @exec_prefix %> rake resque:work QUEUE=* PIDFILE=$app/<%= @pids_dir %>/${index}.pid RAILS_ENV=<%= @environment %> >> <%= @logfile %> 2>&1"
 
 pre-stop script
 # this script runs in /bin/sh by default
