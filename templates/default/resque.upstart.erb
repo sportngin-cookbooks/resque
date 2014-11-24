@@ -7,9 +7,9 @@
 # See resque-manager.conf for how to manage all resque instances at once.
 #
 # Save this config as /etc/init/resque.conf then mange resque with:
-#   sudo start resque app=/path/to/app index=0
-#   sudo stop resque app=/path/to/app  index=0
-#   sudo status resque app=/path/to/app index=0
+#   sudo start resque app=/path/to/app index=0 queues=list,of,queues
+#   sudo stop resque app=/path/to/app  index=0 queues=list,of,queues
+#   sudo status resque app=/path/to/app index=0 queues=list,of,queues
 #
 # or use the service command:
 #   sudo service resque {start,stop,restart,status}
