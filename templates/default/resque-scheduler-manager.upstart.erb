@@ -23,7 +23,7 @@ stop on runlevel [06]
 env RESQUE_CONF=<%= @resque_conf %>
 
 pre-start script
-  for i in `cat $RESQUE_CONF|cut -d , -f 1|sort -u`; do
+  for i in `cat $RESQUE_CONF | cut -d , -f 1 | sort -u`; do
     app=$i
     start resque-scheduler app=$app
   done
