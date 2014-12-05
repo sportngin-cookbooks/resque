@@ -27,7 +27,7 @@ pre-start script
   for i in `cat $RESQUE_CONF`; do
     app=`echo $i | cut -d , -f 1`
     num_workers=`echo $i | cut -d , -f 2`
-    queues=`echo $i | cut -d , -f 3`
+    queues=`echo $i | cut -d , -f 3-`
     [ ! -z $queues ] || queues='*' # Default to wildcard queue if undefined
     for j in `seq $pid_start $(($pid_start + $num_workers - 1))`; do
       start resque app=$app index=$j queues=$queues
