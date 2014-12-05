@@ -1,5 +1,12 @@
 node.override[:resque][:exec_prefix] = "exec bundle exec" if node[:resque][:use_bundle_exec]
 
+template "/etc/init.d/resque" do
+  source "resque-init.sh.erb"
+  cookbook "resque"
+  mode "0644"
+  variables node[:resque]
+end
+
 template "/etc/init/resque.conf" do
   source "resque.upstart.erb"
   cookbook "resque"
