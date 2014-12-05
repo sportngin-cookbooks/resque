@@ -1,16 +1,10 @@
 #!/bin/bash
 ### BEGIN INIT INFO
-# Provides:		resque
-# Required-Start:	$local_fs $remote_fs
-# Required-Stop:	$local_fs $remote_fs
-# Should-Start:		$local_fs
-# Should-Stop:		$local_fs
-# Default-Start:	2 3 4 5
-# Default-Stop:		0 1 6
-# Short-Description:	resque - a Redis-backed Ruby library for creating background jobs
-# Description:		resque - a Redis-backed Ruby library for creating background jobs, placing those jobs on multiple queues, and processing them later.
+# Provides:  resque
+# Short-Description: resque - a Redis-backed Ruby library for creating background jobs
+# Description:  resque - a Redis-backed Ruby library for creating background jobs, placing those jobs on multiple queues, and processing them later.
 ### END INIT INFO
-source /etc/init.d/functions
+. /etc/init.d/functions
 
 log_daemon_msg () {
     # Dummy function to be replaced by LSB library.
@@ -18,26 +12,15 @@ log_daemon_msg () {
     echo $@
 }
 
-log_failure_msg () {
-    # Dummy function to be replaced by LSB library.
-
-    echo $@
-}
-
-USER="<%= @user %>"
-GROUP="<%= @group %>"
-ENVIRONMENT="<%= @environment %>"
 LOGFILE="<%= @logfile %>"
 RESQUE_CONF="<%= @resque_conf %>"
-
-BUNDLER="<%= @bundler || "/usr/local/bin/bundle" %>"
-RAKE="<%= @rake || "rake" %>"
-TASK="<%= @task || "resque:work" %>"
-TIMEOUT="<%= @timeout || 60 %>"
+RESQUE_BIN="<%= @bin_file %>"
+TIMEOUT="<%= @timeout %>"
 
 # Start all the resque queues
 do_start() {
-  log_daemon_msg "=> Starting Resque.."
+  local pid_start
+  log_daemon_msg "=> Starting Resque Queues.."
   pid_start=0
   for i in `cat $RESQUE_CONF`; do
     app=`echo $i | cut -d , -f 1`
@@ -47,7 +30,7 @@ do_start() {
     for j in `seq $pid_start $(($pid_start + $num_workers - 1))`; do
       do_start_one $app $j $queues
     done
-    $pid_start = $j+1
+    pid_start=$((j+1))
   done
 }
 
@@ -56,7 +39,7 @@ do_start_one() {
   local pidfile
   local pid
 
-  pidfile=$1/<%= @pids_dir %>/$2.pid
+  pidfile=$1/tmp/pids/$2.pid
   if [ -e $pidfile ]; then
     pid=`cat $pidfile`
     # If the puma isn't running, run it, otherwise restart it.
@@ -71,31 +54,11 @@ do_start_one() {
 }
 
 do_start_one_do() {
-  local program
-  local options
-  local pidfile
-
   log_daemon_msg "--> Starting Resque $1-$3"
-  log_daemon_msg "user $USER"
-  log_daemon_msg "log to $1/$LOGFILE"
+  log_daemon_msg "logging to $1/$LOGFILE"
 
-  pidfile=$1/<%= @pids_dir %>/$2.pid
-  if test -f $1/Gemfile.lock; then
-    program="$BUNDLER"
-    options="exec rake $TASK"
-  else
-    program="$RAKE"
-    options="$TASK"
-  fi
-
-  options="$options RACK_ENV=$ENVIRONMENT QUEUES=$3"
-
-  if daemon --pidfile $pidfile  --user $USER /bin/bash -- -c "cd $1 && $program $options PIDFILE=$pidfile &> $1/$LOGFILE"
-  then
-    log_daemon_msg "Started Resque $1-$3"
-  else
-    log_failure_msg "Failed to start Resque $1-$3!"
-  fi
+  app=$1 index=$2 queues=$3 daemon $RESQUE_BIN
+  log_daemon_msg "Started Resque $1-$3"
 }
 
 #
@@ -110,7 +73,7 @@ do_stop() {
     for j in `seq $pid_start $(($pid_start + $num_workers - 1))`; do
       do_stop_one $app $j
     done
-    $pid_start = $j+1
+    pid_start=$(($j+1))
   done
 }
 #
@@ -121,20 +84,20 @@ do_stop_one() {
   local pid
   log_daemon_msg "--> Stopping Resque $1-$2"
 
-  pidfile=$1/<%= @pids_dir %>/$2.pid
+  pidfile=$1/tmp/pids/$2.pid
   if [ -e $pidfile ]; then
     pid=`cat $pidfile`
     if [ "`ps -A -o pid= | grep -c $pid`" -eq 0 ]; then
       log_daemon_msg "---> Resque $1-$2 isn't running."
     else
       log_daemon_msg "---> About to kill PID `cat $pidfile`"
-      killproc --signal QUIT -p $pidfile
+      kill -QUIT $pid
       for i in `seq 1 $TIMEOUT`; do
         checkpid $pid || break
         sleep 1
       done
       if checkpid $pid ; then
-        log_failure_msg "Failed to kill Resque $1-$2 gracefully..hard shut down"
+        log_daemon_msg "Failed to kill Resque $1-$2 gracefully..hard shut down"
         kill -KILL $pid >/dev/null 2>&1
       fi
       # Many daemons don't delete their pidfiles when they exit.
@@ -159,7 +122,7 @@ do_restart() {
     for j in `seq $pid_start $(($pid_start + $num_workers - 1))`; do
       do_restart_one $app $j $queues
     done
-    $pid_start = $j+1
+    pid_start=$(($j+1))
   done
 }
 
@@ -170,7 +133,7 @@ do_restart_one() {
   local pidfile
   local pid
 
-  pidfile=$1/<%= @pids_dir %>/$2.pid
+  pidfile=$1/tmp/pids/$2.pid
   if [ -e $pidfile ]; then
     pid=`cat $pidfile`
     log_daemon_msg "--> About to restart Resque $1-$2"
@@ -193,8 +156,8 @@ stop() {
 
 
 case "$1" in
-  start)	start ;;
-stop)	stop ;;
+  start) start ;;
+stop) stop ;;
   restart)
     stop
     start
@@ -204,3 +167,4 @@ stop)	stop ;;
   exit 1
   ;;
 esac
+
