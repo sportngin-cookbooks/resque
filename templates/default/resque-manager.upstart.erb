@@ -32,6 +32,6 @@ pre-start script
     for j in `seq $pid_start $(($pid_start + $num_workers - 1))`; do
       start resque app=$app index=$j queues=$queues
     done
-    $pid_start = $j+1
+    pid_start=$(($j+1))
   done
 end script
