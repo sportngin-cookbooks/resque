@@ -1,0 +1,15 @@
+#!/bin/bash
+USER="<%= @user %>"
+ENVIRONMENT="<%= @environment %>"
+LOGFILE="<%= @logfile %>"
+RAKE="<%= @rake_bin %>"
+TASK="<%= @rake_task %>"
+ENVIRONMENT="<%= @environment %>"
+EXEC_PREFIX="<%= @exec_prefix %>"
+PIDS_DIR="<%= @pids_dir %>"
+<% (@env_vars||[]).each do |key, var| %>
+<%= key %>=<%= var %>
+<% end %>
+
+
+exec sudo -u $USER /bin/bash -c "cd $app && exec $EXEC_PREFIX $RAKE $TASK QUEUE=$queues PIDFILE=$app/$PIDS_DIR/${index}.pid RAILS_ENV=$ENVIRONMENT >> $LOGFILE 2>&1" &
