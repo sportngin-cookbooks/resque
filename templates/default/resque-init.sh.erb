@@ -118,7 +118,6 @@ do_restart() {
     app=`echo $i | cut -d , -f 1`
     num_workers=`echo $i | cut -d , -f 2`
     queues=`echo $i | cut -d , -f 3-`
-    [ ! -z $queues ] || queues='*' # Default to wildcard queue if undefined
     for j in `seq $pid_start $(($pid_start + $num_workers - 1))`; do
       do_restart_one $app $j $queues
     done
@@ -163,7 +162,7 @@ stop) stop ;;
     start
     ;;
 *)
-  echo "Usage: $0 {start|stop|restart|force-reload|status}" >&2
+  echo "Usage: $0 {start|stop|restart}" >&2
   exit 1
   ;;
 esac
