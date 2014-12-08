@@ -1,4 +1,3 @@
-service "resque-manager" do
-  provider Chef::Provider::Service::Upstart
+service "resque" do
   action :nothing
 end
