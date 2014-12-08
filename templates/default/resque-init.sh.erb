@@ -42,7 +42,7 @@ do_start_one() {
   pidfile=$1/tmp/pids/$2.pid
   if [ -e $pidfile ]; then
     pid=`cat $pidfile`
-    # If the puma isn't running, run it, otherwise restart it.
+    # If the resque isn't running, run it, otherwise restart it.
     if [ "`ps -A -o pid= | grep -c $pid`" -eq 0 ]; then
       do_start_one_do $1 $2 $3
     else
