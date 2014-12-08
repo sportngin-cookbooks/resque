@@ -12,4 +12,4 @@ PIDS_DIR="<%= @pids_dir %>"
 <% end %>
 
 
-exec sudo -u $USER /bin/bash -c "cd $app && exec $EXEC_PREFIX $RAKE $TASK QUEUE=$queues PIDFILE=$app/$PIDS_DIR/${index}.pid RAILS_ENV=$ENVIRONMENT >> $LOGFILE 2>&1" &
+exec sudo -u $USER /bin/bash -c "cd $app && $EXEC_PREFIX $RAKE $TASK QUEUE=$queues PIDFILE=$app/$PIDS_DIR/${index}.pid RAILS_ENV=$ENVIRONMENT >> $LOGFILE 2>&1" &
