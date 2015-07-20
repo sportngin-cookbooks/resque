@@ -19,7 +19,11 @@ TIMEOUT="<%= @timeout %>"
 STATUS="1"
 
 pid_running() {
-  ps -A -o pid= | grep -c $1
+  local pid="$1"
+  if [ -e "$pid"]; then
+    pid=`cat $pid`
+  fi
+  ps ax | awk '{print $1}' | grep -c "^$pid\$"
 }
 
 do_for_each_worker() {
@@ -39,12 +43,11 @@ do_for_each_worker() {
 # Start/Restart a single resque queue
 start_one_worker() {
   local pidfile
-  local pid
 
   pidfile=$1/tmp/pids/$2.pid
 
   # If the resque is running (pid file exists and is running), kill it
-  if [[ -e $pidfile && "$(pid_running $(cat $pidfile))" -gt 0 ]]; then
+  if [[ -e $pidfile && "$(pid_running $pidfile)" -gt 0 ]]; then
     stop_one_worker $1 $2 $3
   fi
 
@@ -65,8 +68,7 @@ stop_one_worker() {
 
   pidfile=$1/tmp/pids/$2.pid
   if [ -e $pidfile ]; then
-    pid=`cat $pidfile`
-    if [ "`ps -A -o pid= | grep -c $pid`" -eq 0 ]; then
+    if [ "$(pid_running $pidfile)" -eq 0 ]; then
       log_daemon_msg "---> Resque $1-$2 isn't running."
     else
       log_daemon_msg "---> About to kill PID `cat $pidfile`"
@@ -89,14 +91,10 @@ stop_one_worker() {
 }
 
 status_for_worker() {
-  local pidfile
-  local pid
-  local something_running=1
-  pidfile=$1/tmp/pids/$2.pid
+  local pidfile=$1/tmp/pids/$2.pid
 
   if [ -e $pidfile ]; then
-    pid=`cat $pidfile`
-    if [ "`pid_running $pid`" -eq 0 ]; then
+    if [ "$(pid_running $pidfile)" -eq 0 ]; then
       log_daemon_msg "---> Resque $1-$2 isn't running."
     else
       log_daemon_msg "---> Resque $1-$2 is running."
