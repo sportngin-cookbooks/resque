@@ -42,21 +42,12 @@ start_one_worker() {
   local pid
 
   pidfile=$1/tmp/pids/$2.pid
-  if [ -e $pidfile ]; then
-    pid=`cat $pidfile`
-    # If the resque isn't running, run it, otherwise restart it.
-    if [ "`pid_running $pid`" -eq 0 ]; then
-      start_daemon $1 $2 $3
-    else
-      stop_one_worker $1 $2 $3
-      start_daemon $1 $2 $3
-    fi
-  else
-    start_daemon $1 $2 $3
-  fi
-}
 
-start_daemon() {
+  # If the resque is running (pid file exists and is running), kill it
+  if [ -e $pidfile && "`pid_running $(cat $pidfile)`" -gt 0 ]; then
+    stop_one_worker $1 $2 $3
+  fi
+
   log_daemon_msg "--> Starting Resque $1-$3"
   log_daemon_msg "logging to $1/$LOGFILE"
 
