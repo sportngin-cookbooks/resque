@@ -44,7 +44,7 @@ start_one_worker() {
   pidfile=$1/tmp/pids/$2.pid
 
   # If the resque is running (pid file exists and is running), kill it
-  if [ -e $pidfile && "`pid_running $(cat $pidfile)`" -gt 0 ]; then
+  if [[ -e $pidfile && "$(pid_running $(cat $pidfile))" -gt 0 ]]; then
     stop_one_worker $1 $2 $3
   fi
 
