@@ -16,6 +16,7 @@ LOGFILE="<%= @logfile %>"
 RESQUE_CONF="<%= @resque_conf %>"
 RESQUE_BIN="<%= @bin_file %>"
 TIMEOUT="<%= @timeout %>"
+STATUS="1"
 
 pid_running() {
   ps -A -o pid= | grep -c $1
@@ -111,6 +112,30 @@ do_stop_one() {
   return 0
 }
 
+do_status() {
+  do_for_each_worker "do_status_one"
+  exit $STATUS
+}
+
+do_status_one() {
+  local pidfile
+  local pid
+  local something_running=1
+  pidfile=$1/tmp/pids/$2.pid
+
+  if [ -e $pidfile ]; then
+    pid=`cat $pidfile`
+    if [ "`pid_running $pid`" -eq 0 ]; then
+      log_daemon_msg "---> Resque $1-$2 isn't running."
+    else
+      log_daemon_msg "---> Resque $1-$2 is running."
+      STATUS=0
+    fi
+  else
+    log_daemon_msg "---> No Resque $1-$2 here..."
+  fi
+}
+
 start() {
   do_start
 }
@@ -119,16 +144,21 @@ stop() {
   do_stop
 }
 
+status() {
+  do_status
+}
+
 
 case "$1" in
   start) start ;;
   stop) stop ;;
+  status) status ;;
   restart)
     stop
     start
     ;;
   *)
-    echo "Usage: $0 {start|stop|restart}" >&2
+    echo "Usage: $0 {start|stop|status|restart}" >&2
     exit 1
     ;;
 esac
