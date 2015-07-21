@@ -20,7 +20,7 @@ STATUS="1"
 
 pid_running() {
   local pid="$1"
-  if [ -e "$pid"]; then
+  if [ -e "$pid" ]; then
     pid=`cat $pid`
   fi
   ps ax | awk '{print $1}' | grep -c "^$pid\$"
