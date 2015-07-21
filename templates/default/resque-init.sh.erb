@@ -68,6 +68,7 @@ stop_one_worker() {
 
   pidfile=$1/tmp/pids/$2.pid
   if [ -e $pidfile ]; then
+    pid=`cat $pidfile`
     if [ "$(pid_running $pidfile)" -eq 0 ]; then
       log_daemon_msg "---> Resque $1-$2 isn't running."
     else
